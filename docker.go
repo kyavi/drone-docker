@@ -59,6 +59,7 @@ type (
 	Plugin struct {
 		Login   Login  // Docker login configuration
 		Build   Build  // Docker build configuration
+		Save    bool   // Docker save file
 		Daemon  Daemon // Docker daemon configuration
 		Dryrun  bool   // Docker push is skipped
 		Cleanup bool   // Docker purge is enabled
@@ -129,6 +130,12 @@ func (p Plugin) Exec() error {
 
 		if p.Dryrun == false {
 			cmds = append(cmds, commandPush(p.Build, tag)) // docker push
+		}
+	}
+
+	if p.Save {
+		for _, tag := range p.Build.Tags {
+			cmds = append(cmds, commandSave(p.Build, tag))
 		}
 	}
 
@@ -350,6 +357,12 @@ func commandDaemon(daemon Daemon) *exec.Cmd {
 		args = append(args, "--experimental")
 	}
 	return exec.Command(dockerdExe, args...)
+}
+
+func commandSave(build Build, tag string) *exec.Cmd {
+	input  := fmt.Sprintf("%s:%s", build.Repo, tag)
+	output := fmt.Sprintf("%s.tar", input)
+	return exec.Command(dockerExe, "save", "-o", output, input)
 }
 
 func commandPrune() *exec.Cmd {

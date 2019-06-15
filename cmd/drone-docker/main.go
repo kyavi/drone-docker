@@ -31,6 +31,11 @@ func main() {
 			Usage:  "dry run disables docker push",
 			EnvVar: "PLUGIN_DRY_RUN",
 		},
+		cli.BoolFlag{
+			Name:    "save",
+			Usage:   "Save the final image as repo:tag.tar",
+			EnvVar:  "PLUGIN_SAVE",
+		},
 		cli.StringFlag{
 			Name:   "remote.url",
 			Usage:  "git remote url",
@@ -234,6 +239,7 @@ func run(c *cli.Context) error {
 	plugin := docker.Plugin{
 		Dryrun:  c.Bool("dry-run"),
 		Cleanup: c.BoolT("docker.purge"),
+		Save:    c.Bool("save"),
 		Login: docker.Login{
 			Registry: c.String("docker.registry"),
 			Username: c.String("docker.username"),
